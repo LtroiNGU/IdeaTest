@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xmlns:tx="http://www.springframework.org/schema/tx"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd
+	http://www.springframework.org/schema/tx
+	http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<context:property-placeholder location="classpath:dbconfig.properties"></context:property-placeholder>
+	<!--开启注解的扫描，希望处理service和dao，controller不需要Spring框架去处理-->
+	<context:component-scan base-package="com.oliver.cheaterCounter" >
+		<!--配置哪些注解不扫描-->
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+		<context:exclude-filter type="annotation" expression="org.springframework.web.bind.annotation.RestController" />
+	</context:component-scan>
+
+	<!--    Spring整合MyBatis框架-->
+	<!--    配置c3p0连接池-->
+	<!--    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">-->
+	<!--        <property name="driverClass" value="com.mysql.jdbc.Driver"/>-->
+	<!--        <property name="jdbcUrl" value="jdbc:mysql:///mybatis"/>-->
+	<!--        <property name="user" value="root"/>-->
+	<!--        <property name="password" value="liujian1234"/>-->
+	<!--        </bean>-->
+	<!--    配置c3p0事务管理器-->
+	<!--    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">-->
+	<!--        <property name="dataSource" ref="dataSource" />-->
+	<!--    </bean>-->
+
+	<!--配置druid连接池-->
+	<!-- 阿里 druid 数据库连接池 -->
+	<bean id = "dataSource" class = "com.alibaba.druid.pool.DruidDataSource" destroy-method ="close" >
+		<!-- 数据库基本信息配置 -->
+		<property name = "url" value = "${url}" />
+		<property name = "username" value = "${mysqlUsername}" /><!--配置文件中最好不要取username变量，否则容易取到操作系统中变量的值-->
+		<property name = "password" value = "${password}" />
+		<property name = "driverClassName" value = "${driverClassName}" />
+		<property name = "filters" value = "${filters}" />
+		<!-- 最大并发连接数 -->
+		<property name = "maxActive" value = "${maxActive}" />
+		<!-- 初始化连接数量 -->
+		<property name = "initialSize" value = "${initialSize}" />
+		<!-- 配置获取连接等待超时的时间 -->
+		<property name = "maxWait" value = "${maxWait}" />
+		<!-- 最小空闲连接数 -->
+		<property name = "minIdle" value = "${minIdle}" />
+		<!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+		<property name = "timeBetweenEvictionRunsMillis" value ="${timeBetweenEvictionRunsMillis}" />
+		<!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+		<property name = "minEvictableIdleTimeMillis" value ="${minEvictableIdleTimeMillis}" />
+		<property name = "validationQuery" value = "${validationQuery}" />
+		<property name = "testWhileIdle" value = "${testWhileIdle}" />
+		<property name = "testOnBorrow" value = "${testOnBorrow}" />
+		<property name = "testOnReturn" value = "${testOnReturn}" />
+		<property name = "maxOpenPreparedStatements" value ="${maxOpenPreparedStatements}" />
+		<!-- 打开 removeAbandoned 功能 -->
+		<property name = "removeAbandoned" value = "${removeAbandoned}" />
+		<!-- 1800 秒，也就是 30 分钟 -->
+		<property name = "removeAbandonedTimeout" value ="${removeAbandonedTimeout}" />
+		<!-- 关闭 abanded 连接时输出错误日志 -->
+		<property name = "logAbandoned" value = "${logAbandoned}" />
+	</bean >
+
+	<!--================== 配置和MyBatis的整合=============== -->
+
+	<!-- 配置mybatis Plus的 SqlSessionFactoryBean -->
+    <bean id="sqlSessionFactory" class="com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean">
+    <!-- 数据源 -->
+    <property name="dataSource" ref="dataSource"></property>
+    <!-- 指定mybatis，mapper文件的位置 -->
+      <property name="mapperLocations" value="classpath:mapper/oliver.cheaterCounter/*.xml"></property>
+     <property name="configLocation" value="classpath:mybatis.xml"></property>
+    <!-- 别名处理 -->
+    <property name="typeAliasesPackage"
+    value="com.oliver.cheaterCounter.entity"></property>
+    <!--注入MybatisPlus全局策略配置-->
+    <property name="globalConfig" ref="globalConfiguration"></property>
+    	<!--mybatis plus的pageNation分页插件-->
+    	<property name="plugins" >
+    	<list>
+    	<bean class="com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor"></bean>
+    	</list>
+    	</property>
+    </bean>
+    	<!-- 定义MybatisPlus的全局策略配置-->
+    	<bean id ="globalConfiguration" class="com.baomidou.mybatisplus.core.config.GlobalConfig">
+    		 <property name="dbConfig">
+            <bean class="com.baomidou.mybatisplus.core.config.GlobalConfig.DbConfig">
+            <!--主键规则-->
+            <property name="idType" value="AUTO"/>
+             <!--表前缀-->
+            <property name="tablePrefix" value=""/>
+             </bean>
+             </property>
+    	</bean>
+
+	<!-- 配置扫描器，将mybatis接口的实现加入到ioc容器中 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!--扫描所有dao接口的实现，加入到ioc容器中 -->
+		<property name="basePackage" value="com.oliver.cheaterCounter.mapper"></property>
+	</bean>
+	<!-- 配置一个可以执行批量的sqlSession -->
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg name="sqlSessionFactory" ref="sqlSessionFactory"></constructor-arg>
+		<constructor-arg name="executorType" value="BATCH"></constructor-arg>
+	</bean>
+
+	<!--配置Spring框架声明式事务管理-->
+	<!--配置druid事务管理器-->
+	<bean name = "transactionManager" class ="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
+		<property name = "dataSource" ref = "dataSource" ></property >
+	</bean >
+
+
+	<!--配置事务通知-->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="select*" read-only="true"/>
+			<tx:method name="*" isolation="DEFAULT"/>
+		</tx:attributes>
+	</tx:advice>
+
+	<!--配置AOP增强-->
+	<aop:config proxy-target-class="true">
+		<aop:advisor advice-ref="txAdvice" pointcut="execution(* com.oliver.cheaterCounter.service.*.*(..))"/>
+	</aop:config>
+
+</beans>

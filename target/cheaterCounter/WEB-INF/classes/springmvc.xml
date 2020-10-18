@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!--开启注解扫描，只扫描Controller注解-->
+    <context:component-scan base-package="com.oliver.cheaterCounter" use-default-filters="false">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+        <context:include-filter type="annotation" expression="org.springframework.web.bind.annotation.RestController"/>
+    </context:component-scan>
+
+
+    <!--配置的视图解析器对象-->
+    <bean id="internalResourceViewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/pages/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <!--过滤静态资源-->
+    <mvc:resources location="/css/" mapping="/css/**"/>
+    <mvc:resources location="/images/" mapping="/images/**"/>
+    <mvc:resources location="/js/" mapping="/js/**"/>
+
+
+    <!-- 配置文件解析器对象，要求id名称必须是multipartResolver -->
+    <!--    配置文件解析器：上传文件必备-->
+    <bean id="multipartResolver"
+          class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="10485760"/> <!-- 以字节为单位-->
+    </bean>
+
+    <!--	配置拦截器-->
+<!--    <mvc:interceptors>-->
+
+<!--        <mvc:interceptor>-->
+<!--            <mvc:mapping path="/main/*"/> &lt;!&ndash;对哪些方法进行拦截&ndash;&gt;-->
+<!--            <mvc:exclude-mapping path="/main/testException01"/>&lt;!&ndash;对哪些方法不拦截&ndash;&gt;-->
+<!--            <bean class="com.ltroi.utils.Interceptor.CustomerInterceptor"></bean>-->
+<!--        </mvc:interceptor>-->
+<!--        &lt;!&ndash;		可以串联多个拦截器&ndash;&gt;-->
+<!--    </mvc:interceptors>-->
+
+<!--    <mvc:interceptors>-->
+<!--        <mvc:interceptor>-->
+<!--            <mvc:mapping path="/*/*"/>-->
+<!--            <mvc:exclude-mapping path="/*/testError"/>-->
+<!--            <bean class="com.Ltroi.foodShop.utils.Interceptor.loginInterceptor"></bean>-->
+<!--        </mvc:interceptor>-->
+<!--    </mvc:interceptors>-->
+
+    <!--	配置自定义异常处理页面-->
+ <bean id="pageError" class="com.oliver.cheaterCounter.utils.exception.handler.PageErrorExceptionHandler"></bean>
+    <!--两个标准配置  -->
+    <!-- 将springmvc不能处理的请求交给tomcat -->
+    <mvc:default-servlet-handler/>
+    <!-- 能支持springmvc更高级的一些功能，JSR303校验，快捷的ajax...映射动态请求 -->
+    <mvc:annotation-driven/>
+</beans>
