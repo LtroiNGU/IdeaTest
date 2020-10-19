@@ -56,8 +56,8 @@ public class Generator {
         dsc.setUrl("jdbc:mysql://localhost:3306/cheaterCounter?useUnicode=true&useSSL=false&characterEncoding=utf8");
         // dsc.setSchemaName("public");
         dsc.setDriverName("com.mysql.jdbc.Driver");
-        dsc.setUsername("root");
-        dsc.setPassword("liujian1234");
+        dsc.setUsername("***********");
+        dsc.setPassword("*************");
         mpg.setDataSource(dsc);
 
         // 包配置
